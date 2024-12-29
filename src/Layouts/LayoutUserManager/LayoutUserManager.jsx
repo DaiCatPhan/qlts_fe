@@ -65,6 +65,11 @@ const items = [
     "/usermanager/thematic",
     <FontAwesomeIcon icon={faClipboard} />
   ),
+  getItem(
+    <Link to={"/usermanager/dulieuchamcong"}>Dữ liệu chấm công</Link>,
+    "/usermanager/dulieuchamcong",
+    <FontAwesomeIcon icon={faClipboard} />
+  ),
 ];
 
 const LayoutUserManager = () => {

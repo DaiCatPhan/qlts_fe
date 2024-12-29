@@ -276,7 +276,7 @@ function UM_ManagerFile() {
       }}
     >
       <div className="flex justify-between ">
-        <h1 className="mb-2 text-lg font-medium">Danh sách hồ sơ</h1>
+        <h1 className="mb-2 text-lg font-medium">Danh sách hồ sơ1</h1>
         <div>
           <IconRefresh
             className="cursor-pointer text-blue-900"

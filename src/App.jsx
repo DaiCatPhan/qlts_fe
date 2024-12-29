@@ -42,6 +42,8 @@ import ProfileUserManager from "./pages/ProfileUserManager";
 import Danhsachchiadoandulieu from "./pages/ql/quanlydulieu/Danhsachchiadoandulieu";
 import Danhsachdoandulieu from "./pages/ql/quanlydulieu/Danhsachdoandulieu";
 import Danhsachsinhvien from "./pages/ql/quanlynguoidung/Danhsachsinhvien";
+import DanhSachSinhVienUM from "./pages/um/DanhSachSinhVienUM";
+import DuLieuChamCongUM from "./pages/um/DuLieuChamCongUM";
 
 const LayoutOnly = () => {
   return (
@@ -203,10 +205,6 @@ function App() {
           element: <UserManagerHomePage />,
         },
         {
-          path: "data/:id",
-          element: <ManagerDataUsermanager />,
-        },
-        {
           path: "doandulieu",
           element: <ManagerDoanDuLieu />,
         },
@@ -215,13 +213,14 @@ function App() {
           element: <ManagerDataUsermanager />,
         },
         {
-          path: "data/:id",
-          element: <DetailDataUsermanager />,
+          path: "danhsachsinhvien",
+          element: <DanhSachSinhVienUM />,
         },
         {
-          path: "data/edit/:id",
-          element: <EditDataUsermanager />,
+          path: "dulieuchamcong",
+          element: <DuLieuChamCongUM />,
         },
+
         {
           path: "file",
           element: <UM_ManagerFile />,
@@ -234,11 +233,6 @@ function App() {
           path: "profile",
           element: <ProfileUserManager />,
         },
-
-        // {
-        //   path: "thematic",
-        //   element: <ManagerThematicUsermanager />,
-        // },
       ],
     },
   ]);
