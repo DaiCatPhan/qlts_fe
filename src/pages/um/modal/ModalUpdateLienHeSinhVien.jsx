@@ -18,21 +18,29 @@ function ModalUpdateLienHeSinhVien(props) {
     SDT,
   } = props;
   const [trangThaiLienHe, settrangThaiLienHe] = useState([]);
-  const [MATRANGTHAI, setMATRANGTHAI] = useState();
-  const [CHITIETTRANGTHAI, setCHITIETTRANGTHAI] = useState();
+  const [MATRANGTHAI, setMATRANGTHAI] = useState("");
+  const [CHITIETTRANGTHAI, setCHITIETTRANGTHAI] = useState("");
+  const [SDT_KH, setSDT_KH] = useState("");
   const [tab, setTab] = useState(1);
 
+  // console.log("SDT_KH", dataSV?.SDT);
+  // console.log("SDT_UM", SDT);
+  // console.log("LAN", lan);
+  // console.log("MaPQ", MaPQ);
+
+  const { data: dataLienHe, mutate: fetchDataLienHeStatus } = useSWR(
+    `${API_DATA}/segment/getDataLienHe?SDT=${SDT}&SDT_KH=${dataSV?.SDT}&LAN=${lan}&MaPQ=${MaPQ}`
+  );
   const { data: dataStatus, mutate: fetchDataStatus } = useSWR(
     `${API_DATA}/status`
   );
 
-  console.log("dataSV", dataSV);
-  console.log("MATRANGTHAI", MATRANGTHAI);
+  // goi api lấy thông tin liên hệ theo sdt_um + lan + mapq + sdt_kh
 
   useEffect(() => {
-    if (dataSV) {
-      setMATRANGTHAI(dataSV?.lienhe[0]?.MATRANGTHAI);
-      setCHITIETTRANGTHAI(dataSV?.lienhe[0]?.CHITIETTRANGTHAI);
+    if (dataLienHe) {
+      setMATRANGTHAI(dataLienHe[0]?.MATRANGTHAI);
+      setCHITIETTRANGTHAI(dataLienHe[0]?.CHITIETTRANGTHAI);
     }
     if (dataStatus) {
       const dataStatusTemp = dataStatus?.map((item) => {
@@ -43,7 +51,7 @@ function ModalUpdateLienHeSinhVien(props) {
       });
       settrangThaiLienHe(dataStatusTemp);
     }
-  }, [dataStatus, dataSV]);
+  }, [dataStatus, dataLienHe]);
 
   const handleOk = async () => {
     if (!MATRANGTHAI) {
@@ -115,12 +123,6 @@ function ModalUpdateLienHeSinhVien(props) {
           {tab == 1 ? (
             <div>
               <table className=" w-full">
-                <tr>
-                  <td>Họ tên: PHAN ĐÀI CÁT</td>
-                </tr>
-                <tr>
-                  <td>Số điện thoai: 123456789</td>
-                </tr>
                 <tr>
                   <td>
                     Trạng thái (<span className="text-red-600">*</span>)

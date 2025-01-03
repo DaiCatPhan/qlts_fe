@@ -42,6 +42,7 @@ import ProfileUserManager from "./pages/ProfileUserManager";
 import Danhsachchiadoandulieu from "./pages/ql/quanlydulieu/Danhsachchiadoandulieu";
 import Danhsachdoandulieu from "./pages/ql/quanlydulieu/Danhsachdoandulieu";
 import Danhsachsinhvien from "./pages/ql/quanlynguoidung/Danhsachsinhvien";
+import DanhSachSinhVienTheoDoanUM from "./pages/um/DanhSachSinhVienTheoDoanUM";
 import DanhSachSinhVienUM from "./pages/um/DanhSachSinhVienUM";
 import DuLieuChamCongUM from "./pages/um/DuLieuChamCongUM";
 
@@ -211,6 +212,10 @@ function App() {
         {
           path: "data",
           element: <ManagerDataUsermanager />,
+        },
+        {
+          path: "danhsachsinhvientheodoan",
+          element: <DanhSachSinhVienTheoDoanUM />,
         },
         {
           path: "danhsachsinhvien",

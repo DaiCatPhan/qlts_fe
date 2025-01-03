@@ -56,6 +56,14 @@ const items = [
   ),
 
   getItem(
+    <Link to={"/usermanager/danhsachsinhvientheodoan"}>
+      DSSV theo lần liên hệ
+    </Link>,
+    "/usermanager/danhsachsinhvientheodoan",
+    <DatabaseOutlined />
+  ),
+
+  getItem(
     <Link to={"/usermanager/file"}>Danh sách hồ sơ</Link>,
     "/usermanager/file",
     <IconFile size={16} />

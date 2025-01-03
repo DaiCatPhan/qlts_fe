@@ -1,4 +1,4 @@
-import { IconChessFilled, IconEdit } from "@tabler/icons-react";
+import { IconEdit } from "@tabler/icons-react";
 import { Button, Input, Table } from "antd";
 import { Select } from "antd";
 import useSWR from "swr";
@@ -8,20 +8,16 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import ModalUpdateLienHeSinhVien from "./modal/ModalUpdateLienHeSinhVien";
+import { IconChessFilled } from "@tabler/icons-react";
 
 function ManagerDataUsermanager() {
   const navigate = useNavigate();
-
   const user = useSelector((state) => state.account.user);
-  const queryParameters = new URLSearchParams(window.location.search);
-  const MaPQ = queryParameters.get("MaPQ");
-  const lan = queryParameters.get("lan");
-  const [SDT, setSDT] = useState("");
+
   const [data, setData] = useState([]);
-  const [trangthai, setTrangthai] = useState(lan);
-  const [DALIENHE, setDALIENHE] = useState(3);
-  const [isShowModalUpdate, setIsShowModalUpdate] = useState(false);
-  const [dataSV, setdataSV] = useState();
+  const [MaPQ, setMaPQ] = useState("");
+  const [trangthai, setTrangthai] = useState("1");
+  const [DALIENHE, setDALIENHE] = useState("3");
   // bộ search
   const [HOTENSearch, setHOTENSearch] = useState("");
   const [SDTSearch, setSDTSearch] = useState("");
@@ -34,7 +30,14 @@ function ManagerDataUsermanager() {
   );
   useEffect(() => {
     if (dataList) {
-      setData(dataList[0]);
+      let temp = [];
+      dataList.forEach((item) => {
+        item.chitietpq.forEach((i) => {
+          temp.push(i);
+        });
+      });
+      console.log(temp);
+      setData(temp);
     }
   }, [dataList, trangthai, DALIENHE]);
 
@@ -79,55 +82,74 @@ function ManagerDataUsermanager() {
         return <div>{data?.khachhang?.truong?.TENTRUONG}</div>;
       },
     },
+
+    {
+      title: "Mã đoạn",
+      dataIndex: "",
+      key: "maDoan",
+      render: (data) => {
+        return <div>{}</div>;
+      },
+    },
+
     {
       title: "Đã liên hệ",
       dataIndex: "",
       key: "dalienhe",
       render: (data) => {
         return (
+          <div>{data?.lienhe?.length > 0 ? <div>X</div> : <div></div>}</div>
+        );
+      },
+    },
+
+    {
+      title: "trạng thái",
+      dataIndex: "",
+      key: "matrangthai",
+      render: (data) => {
+        return (
           <div>
-            {data?.lienhe?.length > 0 && data.lienhe[0].LAN == lan ? (
-              <div>X</div>
+            {data?.lienhe?.length > 0 ? (
+              <div>{data?.lienhe[0]?.trangthai?.TENTRANGTHAI}</div>
             ) : (
               <div></div>
             )}
           </div>
         );
       },
+      width: 180,
     },
+
     {
-      title: "Trạng thái",
+      title: "mô tả",
       dataIndex: "",
-      key: "trangthai",
+      key: "motatrangthai",
       render: (data) => {
-        let lienhe = data?.lienhe?.find((i) => i.LAN == lan || "");
-        return <div>{lienhe?.trangthai?.TENTRANGTHAI}</div>;
+        return (
+          <div>
+            {data?.lienhe?.length > 0 ? (
+              <div>{data?.lienhe[0]?.CHITIETTRANGTHAI}</div>
+            ) : (
+              <div></div>
+            )}
+          </div>
+        );
       },
       width: 180,
     },
 
     {
-      title: "Chi tiết",
+      title: "Hành động",
       dataIndex: "",
-      key: "detail",
-      render: (record) => {
-        return (
-          <div>
-            <IconChessFilled color="blue"></IconChessFilled>
-          </div>
-        );
-      },
-      width: 90,
-    },
-
-    {
-      title: "Cập nhật",
-      dataIndex: "",
-      key: "edit",
+      key: "address",
       render: (record) => {
         return (
           <div>
             <div>
+              <IconChessFilled color="blue"></IconChessFilled>
+            </div>
+            {/* <div>
               <IconEdit
                 onClick={() => {
                   setIsShowModalUpdate(true);
@@ -137,60 +159,74 @@ function ManagerDataUsermanager() {
                 width={20}
                 className="cursor-pointer"
               />
-            </div>
+            </div> */}
           </div>
         );
       },
-      width: 90,
     },
   ];
 
   const handleChangeTRANGTHAILIENHE = (value) => {
     setDALIENHE(value);
   };
+  const handleChangeLANLIENHE = (value) => {
+    setTrangthai(value);
+  };
 
   return (
     <div>
-      {data ? (
-        <div>
-          <ModalUpdateLienHeSinhVien
-            isShowModalUpdate={isShowModalUpdate}
-            setIsShowModalUpdate={setIsShowModalUpdate}
-            dataSV={dataSV}
-            MaPQ={MaPQ}
-            lan={lan}
-            SDT={data.SDT}
-            fetchDetailSegment={fetchDetailSegment}
-          />
-        </div>
-      ) : (
-        <div></div>
-      )}
-
-      <div className="flex w-2/3 m-auto justify-around">
-        <div>
-          <b>Mã phân đoạn: {MaPQ}</b>
-        </div>
-        <div>
-          <b>Lần liên hệ: {lan}</b>
-        </div>
-        <div>
-          <b>Số lượng: {data?.chitietpq?.length || 0}</b>
-        </div>
-      </div>
-
-      <div className="flex justify-center mb-5">
-        <div className="w-2/3 border py-4 rounded-md border-gray-400 ">
+      <div className="  flex justify-center mb-5">
+        <div className="w-2/3 border py-4 rounded-md border-blue-600 ">
           <table className="">
             <tr>
               <td className="px-12">Lần liên hệ</td>
               <td>
-                <Input value={`Liên hệ lần ${lan}`} readOnly />
+                <Select
+                  defaultValue={trangthai}
+                  style={{
+                    width: 200,
+                  }}
+                  onChange={handleChangeLANLIENHE}
+                  options={[
+                    {
+                      value: "",
+                      label: "Tất cả",
+                    },
+                    {
+                      value: "1",
+                      label: "Liên hệ lần 1",
+                    },
+                    {
+                      value: "2",
+                      label: "Liên hệ lần 2",
+                    },
+                    {
+                      value: "3",
+                      label: "Liên hệ lần 3",
+                    },
+                    {
+                      value: "4",
+                      label: "Liên hệ lần 4",
+                    },
+                    {
+                      value: "5",
+                      label: "Liên hệ lần 5",
+                    },
+                    {
+                      value: "6",
+                      label: "Liên hệ lần 6",
+                    },
+                    {
+                      value: "7",
+                      label: "Liên hệ lần 7",
+                    },
+                  ]}
+                />
               </td>
               <td className="px-12">Trạng thái liên hệ</td>
               <td>
                 <Select
-                  defaultValue=""
+                  defaultValue="3"
                   style={{
                     width: 200,
                   }}
@@ -261,7 +297,8 @@ function ManagerDataUsermanager() {
       {/* TABLE */}
       <div>
         <Table
-          dataSource={data?.chitietpq}
+          bordered
+          dataSource={data}
           columns={columns}
           pagination={{
             position: ["topRight", "bottomRight"], // Cả trên và dưới

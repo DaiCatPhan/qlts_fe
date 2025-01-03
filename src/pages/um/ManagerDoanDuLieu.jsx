@@ -10,24 +10,24 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "antd";
 import { Input } from "antd";
 import { toast } from "react-toastify";
+import moment from "moment";
 
 function ManagerDataUsermanager() {
   const user = useSelector((state) => state.account.user);
   const navigate = useNavigate();
   const [data, setData] = useState([]);
 
-  const [TRANGTHAILIENHE, setTRANGTHAILIENHE] = useState("");
   const [MaPQ, setMaPQ] = useState("");
 
   const { data: dataList, mutate: fetchDataSegmentUsermanager } = useSWR(
-    `${API_DATA}/segment?SDT=${user?.SDT}&TRANGTHAILIENHE=${TRANGTHAILIENHE}&MaPQ=${MaPQ}`
+    `${API_DATA}/segment?SDT=${user?.SDT}&MaPQ=${MaPQ}`
   );
 
   useEffect(() => {
     if (dataList) {
       setData(dataList);
     }
-  }, [dataList, TRANGTHAILIENHE, MaPQ]);
+  }, [dataList, MaPQ]);
 
   const handleDetailDoan = (record) => {
     if (record.TRANGTHAILIENHE == 0) {
@@ -52,27 +52,51 @@ function ManagerDataUsermanager() {
     },
 
     {
-      title: "Mở liên hệ lần",
+      title: "Lần liên hệ",
       dataIndex: "TRANGTHAILIENHE",
       key: "TRANGTHAILIENHE",
     },
 
     {
-      title: "Thời gian tạo đoạn",
+      title: "Thời gian bắt đầu",
       dataIndex: "createdAt",
       key: "createdAt",
+      render: (createdAt) => {
+        return <div>{moment(createdAt).format("DD-MM-YYYY")}</div>;
+      },
+    },
+
+    {
+      title: "Tổng số sinh viên",
+      dataIndex: "",
+      key: "dalienhe",
+      render: (data) => {
+        return <div>{data.chitietpq.length}</div>;
+      },
     },
 
     {
       title: "Đã liên hệ",
       dataIndex: "",
       key: "dalienhe",
+      render: (data) => {
+        let daLienHe = data?.chitietpq.filter((item) => {
+          return item?.lienhe.some((i) => i.LAN == data.TRANGTHAILIENHE);
+        });
+        return <div>{daLienHe?.length}</div>;
+      },
     },
 
     {
       title: "Chưa liên hệ",
       dataIndex: "",
       key: "chualienhe",
+      render: (data) => {
+        let chuaLienHe = data?.chitietpq.filter((item) => {
+          return !item?.lienhe.some((i) => i.LAN == data.TRANGTHAILIENHE);
+        });
+        return <div>{chuaLienHe?.length}</div>;
+      },
     },
 
     {
@@ -108,7 +132,7 @@ function ManagerDataUsermanager() {
   return (
     <div>
       <div className="  flex justify-center mb-5">
-        <div className="w-1/3 border py-4 rounded-md border-blue-600 ">
+        <div className="w-1/3 border py-4 rounded-md border-gray-400 ">
           <table className="">
             <tr>
               <td className="px-12">Đoạn dữ liệu</td>
@@ -119,59 +143,12 @@ function ManagerDataUsermanager() {
                 />
               </td>
             </tr>
-
-            <tr>
-              <td className="px-12">Lần liên hệ</td>
-              <td>
-                <Select
-                  defaultValue=""
-                  style={{
-                    width: 200,
-                  }}
-                  onChange={handleChangeTrangThai}
-                  options={[
-                    {
-                      value: "",
-                      label: "Tất cả",
-                    },
-                    {
-                      value: "1",
-                      label: "Liên hệ lần 1",
-                    },
-                    {
-                      value: "2",
-                      label: "Liên hệ lần 2",
-                    },
-                    {
-                      value: "3",
-                      label: "Liên hệ lần 3",
-                    },
-                    {
-                      value: "4",
-                      label: "Liên hệ lần 4",
-                    },
-                    {
-                      value: "5",
-                      label: "Liên hệ lần 5",
-                    },
-                    {
-                      value: "6",
-                      label: "Liên hệ lần 6",
-                    },
-                    {
-                      value: "7",
-                      label: "Liên hệ lần 7",
-                    },
-                  ]}
-                />
-              </td>
-            </tr>
           </table>
         </div>
       </div>
       {/* TABLE */}
       <div>
-        <Table dataSource={data} columns={columns} />
+        <Table dataSource={data} columns={columns} bordered />
       </div>
     </div>
   );
