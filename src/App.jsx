@@ -83,7 +83,8 @@ function App() {
       children: [
         {
           index: true,
-          element: <HomePage />,
+          // element: <HomePage />,
+          element: <Login />,
         },
         {
           path: "/thongtinkhachhang",
@@ -92,8 +93,8 @@ function App() {
       ],
     },
     {
-      path: "/login",
-      element: <Login />,
+      path: "/sinhvien",
+      element: <HomePage />,
     },
 
     // ADMIN

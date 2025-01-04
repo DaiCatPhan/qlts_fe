@@ -289,8 +289,6 @@ function CreateData() {
   ];
 
   function xuatExcelLoi() {
-    // console.log(123);
-
     let header = [
       {
         header: "Dòng excel lỗi",

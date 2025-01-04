@@ -7,7 +7,10 @@ import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { BackwardOutlined, FileExcelOutlined } from "@ant-design/icons";
 import ModalUpdateLienHeSinhVien from "./modal/ModalUpdateLienHeSinhVien";
+import excel from "../../components/ExportFile/ExportFile";
+import moment from "moment";
 
 function ManagerDataUsermanager() {
   const navigate = useNavigate();
@@ -51,7 +54,7 @@ function ManagerDataUsermanager() {
       dataIndex: "",
       key: "SDT",
       render: (data) => {
-        return <div>{data?.khachhang.SDT}</div>;
+        return <div>{data?.khachhang?.SDT}</div>;
       },
     },
     {
@@ -59,7 +62,7 @@ function ManagerDataUsermanager() {
       dataIndex: "",
       key: "HOTEN",
       render: (data) => {
-        return <div>{data?.khachhang.HOTEN}</div>;
+        return <div>{data?.khachhang?.HOTEN}</div>;
       },
     },
     {
@@ -67,7 +70,7 @@ function ManagerDataUsermanager() {
       dataIndex: "",
       key: "EMAIL",
       render: (data) => {
-        return <div>{data?.khachhang.EMAIL}</div>;
+        return <div>{data?.khachhang?.EMAIL}</div>;
       },
     },
 
@@ -80,13 +83,28 @@ function ManagerDataUsermanager() {
       },
     },
     {
+      title: "Ngày liên hệ",
+      dataIndex: "",
+      key: "ngayLienHe",
+      render: (data) => {
+        return (
+          <div>
+            {data?.lienhe
+              ? moment(data?.lienhe[0]?.THOIGIAN).format("DD-MM-YYYY")
+              : ""}
+          </div>
+        );
+      },
+    },
+
+    {
       title: "Đã liên hệ",
       dataIndex: "",
       key: "dalienhe",
       render: (data) => {
         return (
           <div>
-            {data?.lienhe?.length > 0 && data.lienhe[0].LAN == lan ? (
+            {data?.lienhe?.some((item) => item?.LAN === lan) ? (
               <div>X</div>
             ) : (
               <div></div>
@@ -95,12 +113,13 @@ function ManagerDataUsermanager() {
         );
       },
     },
+
     {
       title: "Trạng thái",
       dataIndex: "",
       key: "trangthai",
       render: (data) => {
-        let lienhe = data?.lienhe?.find((i) => i.LAN == lan || "");
+        let lienhe = data?.lienhe?.find((i) => i.LAN == lan) || "";
         return <div>{lienhe?.trangthai?.TENTRANGTHAI}</div>;
       },
       width: 180,
@@ -149,6 +168,130 @@ function ManagerDataUsermanager() {
     setDALIENHE(value);
   };
 
+  // In/Xuất dữ liệu excel
+  function xuatExcel() {
+    let header = [
+      {
+        header: "STT",
+        key: "STT",
+      },
+      {
+        header: "Số điện thoại",
+        key: "SDT",
+      },
+      {
+        header: "Họ và tên",
+        key: "HOTEN",
+      },
+      {
+        header: "Email",
+        key: "EMAIL",
+      },
+      {
+        header: "Trường",
+        key: "TRUONG",
+      },
+      {
+        header: "Ngày liên hệ",
+        key: "NGAYLIENHE",
+      },
+      {
+        header: "Đã liên hệ",
+        key: "DALIENHE",
+      },
+      {
+        header: "Trạng thái",
+        key: "TRANGTHAI",
+      },
+    ];
+
+    let i = 0;
+    let dataEx = data?.chitietpq?.map((item) => {
+      i++;
+      return {
+        STT: i,
+        SDT: item?.khachhang?.SDT,
+        HOTEN: item?.khachhang?.HOTEN,
+        EMAIL: item?.khachhang?.EMAIL,
+        TRUONG: item?.khachhang?.truong?.TENTRUONG || "",
+        NGAYLIENHE: item?.lienhe[0]?.THOIGIAN
+          ? moment(item?.lienhe[0]?.THOIGIAN).format("DD-MM-YYYY")
+          : "",
+        DALIENHE: item?.lienhe[0]?.MALIENHE ? "X" : "",
+        TRANGTHAI: item?.lienhe[0]?.trangthai
+          ? item?.lienhe[0]?.trangthai?.TENTRANGTHAI
+          : "",
+      };
+    });
+
+    excel.EX_Excel({
+      header: header,
+      data: dataEx,
+      nameFile: `danhSachKhachHang_${MaPQ}_LAN${lan}`,
+    });
+  }
+  function In() {
+    let header = [
+      {
+        header: "STT",
+        key: "STT",
+      },
+      {
+        header: "Số điện thoại",
+        key: "SDT",
+      },
+      {
+        header: "Họ và tên",
+        key: "HOTEN",
+      },
+      {
+        header: "Email",
+        key: "EMAIL",
+      },
+      {
+        header: "Trường",
+        key: "TRUONG",
+      },
+      {
+        header: "Ngày liên hệ",
+        key: "NGAYLIENHE",
+      },
+      {
+        header: "Đã liên hệ",
+        key: "DALIENHE",
+      },
+      {
+        header: "Trạng thái",
+        key: "TRANGTHAI",
+      },
+    ];
+
+    let i = 0;
+    let dataEx = data?.chitietpq?.map((item) => {
+      i++;
+      return {
+        STT: i,
+        SDT: item?.khachhang?.SDT,
+        HOTEN: item?.khachhang?.HOTEN,
+        EMAIL: item?.khachhang?.EMAIL,
+        TRUONG: item?.khachhang?.truong?.TENTRUONG || "",
+        NGAYLIENHE: item?.lienhe[0]?.THOIGIAN
+          ? moment(item?.lienhe[0]?.THOIGIAN).format("DD-MM-YYYY")
+          : "",
+        DALIENHE: item?.lienhe[0]?.MALIENHE ? "X" : "",
+        TRANGTHAI: item?.lienhe[0]?.trangthai
+          ? item?.lienhe[0]?.trangthai?.TENTRANGTHAI
+          : "",
+      };
+    });
+
+    excel.PRINT_DATA({
+      header: header,
+      data: dataEx,
+      nameFile: `DANH SÁCH KHÁCH HÀNG ${MaPQ} LẦN ${lan}`,
+    });
+  }
+
   return (
     <div>
       {data ? (
@@ -175,11 +318,18 @@ function ManagerDataUsermanager() {
           <b>Lần liên hệ: {lan}</b>
         </div>
         <div>
-          <b>Số lượng: {data?.chitietpq?.length || 0}</b>
+          <b>
+            Số lượng:
+            {data?.chitietpq?.lienhe
+              ? data?.chitietpq?.filter((item) =>
+                  item?.lienhe?.some((i) => i.LAN == lan)
+                ).length
+              : data?.chitietpq?.length}
+          </b>
         </div>
       </div>
 
-      <div className="flex justify-center mb-5">
+      <div className="flex justify-center">
         <div className="w-2/3 border py-4 rounded-md border-gray-400 ">
           <table className="">
             <tr>
@@ -255,6 +405,48 @@ function ManagerDataUsermanager() {
               </td>
             </tr>
           </table>
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <div className="mt-2">
+          <Button
+            onClick={() => {
+              navigate("/usermanager/doandulieu");
+            }}
+            icon={<BackwardOutlined />}
+            style={{
+              backgroundColor: "white",
+              color: "grey",
+              borderColor: "grey",
+            }}
+          >
+            <b>Trở về</b>
+          </Button>
+          <span className="mx-2"></span>
+          <Button
+            onClick={In}
+            icon={<FileExcelOutlined />}
+            style={{
+              backgroundColor: "white",
+              color: "green",
+              borderColor: "green",
+            }}
+          >
+            <b>In</b>
+          </Button>
+          <span className="mx-2"></span>
+          <Button
+            onClick={xuatExcel}
+            icon={<FileExcelOutlined />}
+            style={{
+              backgroundColor: "white",
+              color: "green",
+              borderColor: "green",
+            }}
+          >
+            <b>Xuất Excel</b>
+          </Button>
         </div>
       </div>
 

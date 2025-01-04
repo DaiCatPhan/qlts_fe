@@ -55,6 +55,10 @@ const items = [
       "/admin/tudien"
     ),
     getItem(<Link to={"/admin/tudien"}>Tự điển kết quả</Link>, "/admin/tudien"),
+    getItem(
+      <Link to={"/admin/tudien"}>Tự điển KH quan tâm</Link>,
+      "/admin/tudien"
+    ),
   ]),
   getItem("Quản lý người dùng", "sub1", <UserOutlined />, [
     getItem(<Link to={"/admin/user"}>Danh sách nhân viên</Link>, "/admin/user"),

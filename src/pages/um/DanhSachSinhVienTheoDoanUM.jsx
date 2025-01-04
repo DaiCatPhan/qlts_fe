@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import ModalUpdateLienHeSinhVien from "./modal/ModalUpdateLienHeSinhVien";
 import { IconChessFilled } from "@tabler/icons-react";
+import { BackwardOutlined, FileExcelOutlined } from "@ant-design/icons";
 
 function ManagerDataUsermanager() {
   const navigate = useNavigate();
@@ -98,7 +99,13 @@ function ManagerDataUsermanager() {
       key: "dalienhe",
       render: (data) => {
         return (
-          <div>{data?.lienhe?.length > 0 ? <div>X</div> : <div></div>}</div>
+          <div>
+            {data?.lienhe?.some((item) => item.LAN === trangthai) ? (
+              <div>X</div>
+            ) : (
+              <div></div>
+            )}
+          </div>
         );
       },
     },
@@ -108,15 +115,8 @@ function ManagerDataUsermanager() {
       dataIndex: "",
       key: "matrangthai",
       render: (data) => {
-        return (
-          <div>
-            {data?.lienhe?.length > 0 ? (
-              <div>{data?.lienhe[0]?.trangthai?.TENTRANGTHAI}</div>
-            ) : (
-              <div></div>
-            )}
-          </div>
-        );
+        let lienhe = data?.lienhe?.find((i) => i.LAN == trangthai || "");
+        return <div>{lienhe?.trangthai?.TENTRANGTHAI}</div>;
       },
       width: 180,
     },
@@ -126,15 +126,8 @@ function ManagerDataUsermanager() {
       dataIndex: "",
       key: "motatrangthai",
       render: (data) => {
-        return (
-          <div>
-            {data?.lienhe?.length > 0 ? (
-              <div>{data?.lienhe[0]?.CHITIETTRANGTHAI}</div>
-            ) : (
-              <div></div>
-            )}
-          </div>
-        );
+        let lienhe = data?.lienhe?.find((i) => i.LAN == trangthai || "");
+        return <div>{lienhe?.trangthai?.CHITIETTRANGTHAI}</div>;
       },
       width: 180,
     },
@@ -175,8 +168,20 @@ function ManagerDataUsermanager() {
 
   return (
     <div>
+      <div className="flex w-2/3 m-auto justify-around">
+        <div>
+          <b>Lần liên hệ: {trangthai}</b>
+        </div>
+        <div>
+          <b>Đã liên hệ: chưa làm</b>
+        </div>
+        <div>
+          <b>Chưa liên hệ: chưa làm</b>
+        </div>
+      </div>
+
       <div className="  flex justify-center mb-5">
-        <div className="w-2/3 border py-4 rounded-md border-blue-600 ">
+        <div className="w-2/3 border py-4 rounded-md border-gray-400 ">
           <table className="">
             <tr>
               <td className="px-12">Lần liên hệ</td>
@@ -188,10 +193,6 @@ function ManagerDataUsermanager() {
                   }}
                   onChange={handleChangeLANLIENHE}
                   options={[
-                    {
-                      value: "",
-                      label: "Tất cả",
-                    },
                     {
                       value: "1",
                       label: "Liên hệ lần 1",
@@ -291,6 +292,33 @@ function ManagerDataUsermanager() {
               </td>
             </tr>
           </table>
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <div className="mt-2">
+          <span className="mx-2"></span>
+          <Button
+            icon={<FileExcelOutlined />}
+            style={{
+              backgroundColor: "white",
+              color: "green",
+              borderColor: "green",
+            }}
+          >
+            <b>In (chưa làm)</b>
+          </Button>
+          <span className="mx-2"></span>
+          <Button
+            icon={<FileExcelOutlined />}
+            style={{
+              backgroundColor: "white",
+              color: "green",
+              borderColor: "green",
+            }}
+          >
+            <b>Xuất Excel (chưa làm)</b>
+          </Button>
         </div>
       </div>
 

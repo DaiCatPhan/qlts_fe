@@ -43,4 +43,82 @@ async function EX_Excel({ header, data, nameFile }) {
   }
 }
 
-export default { EX_Excel };
+async function PRINT_DATA({ header, data, nameFile }) {
+  try {
+    // Tạo nội dung HTML cho in
+    let content = `
+      <html>
+        <head>
+          <title>${nameFile}</title>
+          <style>
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 20px 0;
+              font-size: 16px;
+              text-align: left;
+            }
+            th, td {
+              border: 1px solid #ddd;
+              padding: 8px;
+            }
+            th {
+              background-color: #f2f2f2;
+              font-weight: bold;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>${nameFile}</h1>
+          <table>
+            <thead>
+              <tr>
+                ${header
+                  .map(
+                    (item) => `
+                  <th>${item?.header}</th>
+                `
+                  )
+                  .join("")}
+              </tr>
+            </thead>
+            <tbody>
+              ${data
+                .map(
+                  (row) => `
+                <tr>
+                  ${header
+                    .map(
+                      (hd) => `
+                    <td>${row[hd.key] || ""}</td>
+                  `
+                    )
+                    .join("")}
+                </tr>
+              `
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open("", "_blank");
+
+    if (printWindow) {
+      printWindow.document.open();
+      printWindow.document.write(content);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    } else {
+      console.error("Unable to open print window");
+    }
+  } catch (error) {
+    console.error("Error printing data:", error);
+  }
+}
+
+export default { EX_Excel, PRINT_DATA };
