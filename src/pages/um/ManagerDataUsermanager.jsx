@@ -87,11 +87,10 @@ function ManagerDataUsermanager() {
       dataIndex: "",
       key: "ngayLienHe",
       render: (data) => {
+        let lienhe = data?.lienhe?.find((i) => i.LAN == lan) || "";
         return (
           <div>
-            {data?.lienhe
-              ? moment(data?.lienhe[0]?.THOIGIAN).format("DD-MM-YYYY")
-              : ""}
+            {lienhe && moment(data?.lienhe?.THOIGIAN).format("DD-MM-YYYY")}
           </div>
         );
       },
@@ -125,19 +124,19 @@ function ManagerDataUsermanager() {
       width: 180,
     },
 
-    {
-      title: "Chi tiết",
-      dataIndex: "",
-      key: "detail",
-      render: (record) => {
-        return (
-          <div>
-            <IconChessFilled color="blue"></IconChessFilled>
-          </div>
-        );
-      },
-      width: 90,
-    },
+    // {
+    //   title: "Chi tiết",
+    //   dataIndex: "",
+    //   key: "detail",
+    //   render: (record) => {
+    //     return (
+    //       <div>
+    //         <IconChessFilled color="blue"></IconChessFilled>
+    //       </div>
+    //     );
+    //   },
+    //   width: 90,
+    // },
 
     {
       title: "Cập nhật",
@@ -208,19 +207,18 @@ function ManagerDataUsermanager() {
     let i = 0;
     let dataEx = data?.chitietpq?.map((item) => {
       i++;
+      let lienhe = item?.lienhe?.find((i) => i.LAN == lan) || {};
       return {
         STT: i,
         SDT: item?.khachhang?.SDT,
         HOTEN: item?.khachhang?.HOTEN,
         EMAIL: item?.khachhang?.EMAIL,
         TRUONG: item?.khachhang?.truong?.TENTRUONG || "",
-        NGAYLIENHE: item?.lienhe[0]?.THOIGIAN
-          ? moment(item?.lienhe[0]?.THOIGIAN).format("DD-MM-YYYY")
+        NGAYLIENHE: lienhe?.THOIGIAN
+          ? moment(lienhe?.THOIGIAN).format("DD-MM-YYYY")
           : "",
-        DALIENHE: item?.lienhe[0]?.MALIENHE ? "X" : "",
-        TRANGTHAI: item?.lienhe[0]?.trangthai
-          ? item?.lienhe[0]?.trangthai?.TENTRANGTHAI
-          : "",
+        DALIENHE: lienhe?.MALIENHE ? "X" : "",
+        TRANGTHAI: lienhe?.trangthai ? lienhe?.trangthai?.TENTRANGTHAI : "",
       };
     });
 
@@ -269,19 +267,16 @@ function ManagerDataUsermanager() {
     let i = 0;
     let dataEx = data?.chitietpq?.map((item) => {
       i++;
+      let lienhe = item?.lienhe?.find((i) => i.LAN == lan) || "";
       return {
         STT: i,
         SDT: item?.khachhang?.SDT,
         HOTEN: item?.khachhang?.HOTEN,
         EMAIL: item?.khachhang?.EMAIL,
         TRUONG: item?.khachhang?.truong?.TENTRUONG || "",
-        NGAYLIENHE: item?.lienhe[0]?.THOIGIAN
-          ? moment(item?.lienhe[0]?.THOIGIAN).format("DD-MM-YYYY")
-          : "",
-        DALIENHE: item?.lienhe[0]?.MALIENHE ? "X" : "",
-        TRANGTHAI: item?.lienhe[0]?.trangthai
-          ? item?.lienhe[0]?.trangthai?.TENTRANGTHAI
-          : "",
+        NGAYLIENHE: lienhe && moment(lienhe?.THOIGIAN).format("DD-MM-YYYY"),
+        DALIENHE: lienhe?.MALIENHE ? "X" : "",
+        TRANGTHAI: lienhe?.trangthai ? lienhe?.trangthai?.TENTRANGTHAI : "",
       };
     });
 
@@ -299,7 +294,7 @@ function ManagerDataUsermanager() {
           <ModalUpdateLienHeSinhVien
             isShowModalUpdate={isShowModalUpdate}
             setIsShowModalUpdate={setIsShowModalUpdate}
-            dataSV={dataSV}
+            SDT_KH={dataSV?.SDT}
             MaPQ={MaPQ}
             lan={lan}
             SDT={data.SDT}

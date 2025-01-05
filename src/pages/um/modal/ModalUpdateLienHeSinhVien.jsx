@@ -12,7 +12,7 @@ function ModalUpdateLienHeSinhVien(props) {
     fetchDetailSegment,
     isShowModalUpdate,
     setIsShowModalUpdate,
-    dataSV,
+    SDT_KH,
     MaPQ,
     lan,
     SDT,
@@ -33,13 +33,8 @@ function ModalUpdateLienHeSinhVien(props) {
   const [CHITIETTRANGTHAI, setCHITIETTRANGTHAI] = useState("");
   const [tab, setTab] = useState(1);
 
-  // console.log("SDT_KH", dataSV?.SDT);
-  // console.log("SDT_UM", SDT);
-  // console.log("LAN", lan);
-  // console.log("MaPQ", MaPQ);
-
   const { data: dataLienHe, mutate: fetchDataLienHeStatus } = useSWR(
-    `${API_DATA}/segment/getDataLienHe?SDT=${SDT}&SDT_KH=${dataSV?.SDT}&LAN=${lan}&MaPQ=${MaPQ}`
+    `${API_DATA}/segment/getDataLienHe?SDT=${SDT}&SDT_KH=${SDT_KH}&LAN=${lan}&MaPQ=${MaPQ}`
   );
   const { data: dataJob, mutate: fetchDataJob } = useSWR(
     `${API_DATA}/table-job`
@@ -63,7 +58,7 @@ function ModalUpdateLienHeSinhVien(props) {
     `${API_DATA}/school`
   );
   const { data: infoKhachHang, mutate: fetchDatainfoKhachHang } = useSWR(
-    `${API_CUSTOMER}/${dataSV?.SDT}`
+    `${API_CUSTOMER}/${SDT_KH}`
   );
 
   // goi api lấy thông tin liên hệ theo sdt_um + lan + mapq + sdt_kh
@@ -160,7 +155,7 @@ function ModalUpdateLienHeSinhVien(props) {
       return toast.warning("Vui lòng chọn trạng thái liên hệ !!!");
     }
     let data = {
-      SDT_KH: dataSV.SDT,
+      SDT_KH: SDT_KH,
       SDT: SDT,
       MATRANGTHAI: MATRANGTHAI,
       LAN: lan,
@@ -225,7 +220,6 @@ function ModalUpdateLienHeSinhVien(props) {
 
       const res = await CustomerService.updateCustomer(data);
       fetchDatainfoKhachHang();
-      handleCancel();
       toast.success(res.message);
     } catch (e) {
       toast.error(e.message);
@@ -265,6 +259,7 @@ function ModalUpdateLienHeSinhVien(props) {
           style={{
             top: "10px",
           }}
+          footer={tab === 2 ? null : undefined}
         >
           <Tabs
             activeKey={tab.toString()}
@@ -365,7 +360,7 @@ function ModalUpdateLienHeSinhVien(props) {
                     <td>Tỉnh</td>
                     <td>
                       <Select
-                        defaultValue={thongTinKhachHang?.tinh?.MATINH}
+                        defaultValue={thongTinKhachHang?.MATINH}
                         style={{
                           width: "100%",
                         }}
@@ -383,7 +378,7 @@ function ModalUpdateLienHeSinhVien(props) {
                     <td>Trường</td>
                     <td>
                       <Select
-                        defaultValue={thongTinKhachHang?.truong?.MATRUONG}
+                        defaultValue={thongTinKhachHang?.MATRUONG}
                         style={{
                           width: "100%",
                         }}

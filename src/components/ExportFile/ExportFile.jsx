@@ -43,7 +43,7 @@ async function EX_Excel({ header, data, nameFile }) {
   }
 }
 
-async function PRINT_DATA({ header, data, nameFile }) {
+async function PRINT_DATA({ header, data, nameFile, font = "12px" }) {
   try {
     // Tạo nội dung HTML cho in
     let content = `
@@ -54,13 +54,13 @@ async function PRINT_DATA({ header, data, nameFile }) {
             table {
               width: 100%;
               border-collapse: collapse;
-              margin: 20px 0;
-              font-size: 16px;
+              margin: 10px 0;
+              font-size: ${font};
               text-align: left;
             }
             th, td {
               border: 1px solid #ddd;
-              padding: 8px;
+              padding: 4px;
             }
             th {
               background-color: #f2f2f2;

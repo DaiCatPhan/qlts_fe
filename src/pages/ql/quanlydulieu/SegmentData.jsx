@@ -24,15 +24,15 @@ import { FiFolder } from "react-icons/fi";
 import { TbFilterDown } from "react-icons/tb";
 import { toast } from "react-toastify";
 import useSWR from "swr";
-import { DeleteIcon } from "../components/icons/DeleteIcon";
-import { EditIcon } from "../components/icons/EditIcon";
-import { EyeIcon } from "../components/icons/EyeIcon";
-import { SearchIcon } from "../components/icons/SearchIcon";
-import ModalSegment from "../components/Modal/ModalSegment";
-import { API_DATA } from "../constants";
-import segmentService from "../service/SegmentService";
+import { DeleteIcon } from "../../../components/icons/DeleteIcon";
+import { EditIcon } from "../../../components/icons/EditIcon";
+import { EyeIcon } from "../../../components/icons/EyeIcon";
+import { SearchIcon } from "../../../components/icons/SearchIcon";
+import ModalSegment from "../../../components/Modal/ModalSegment";
+import { API_DATA } from "../../../constants";
+import segmentService from "../../../service/SegmentService";
 import { IconFile } from "@tabler/icons-react";
-import excel from "../components/ExportFile/ExportFile";
+import excel from "../../../components/ExportFile/ExportFile";
 
 function SegmentData() {
   // Const
@@ -202,7 +202,6 @@ function SegmentData() {
     try {
       const res = await segmentService.createSegment(data);
 
-      console.log("res:", res);
       toast.success("Phân đoạn thành công.");
       setSelectedKeys(new Set([]));
       mutateDataAvailable();
@@ -765,26 +764,24 @@ function SegmentData() {
                   0}
               </span>
 
-              <Button
-                color="primary"
-                className=""
-                onPress={onOpen}
-                isDisabled={sortedItems.length == 0}
-              >
+              <Button size="sm" color="success" className="text-white">
+                Thêm vào đoạn (chưa làm)
+              </Button>
+
+              <Button size="sm" color="primary" className="" onPress={onOpen}>
                 Phân đoạn
               </Button>
 
-              <Button
-                color="primary"
-                className=""
-                // onPress={onOpen}
-                // isDisabled={sortedItems.length == 0} 
-              >
+              <Button color="danger" size="sm">
                 Xóa tất cả (chưa làm)
               </Button>
 
-              <Button onClick={handleEXcel}>
-                <IconFile size="18" /> Xuất file
+              <Button
+                size="sm"
+                onClick={handleEXcel}
+                className="bg-white border border-green-800 text-green-600"
+              >
+                <IconFile size="18" /> <b>Xuất file</b>
               </Button>
             </div>
           </div>

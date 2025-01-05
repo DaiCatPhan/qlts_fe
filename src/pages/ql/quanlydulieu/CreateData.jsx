@@ -16,14 +16,12 @@ import { Table } from "antd";
 import { Select } from "antd";
 
 import fs from "fs";
-import excel from "../components/ExportFile/ExportFile";
-
-import SegmentService from "../service/SegmentService";
+import excel from "../../../components/ExportFile/ExportFile";
+import SegmentService from "../../../service/SegmentService";
 
 function CreateData() {
   const [file, setFile] = useState(null);
-  const [files1, setFiles1] = useState([]);
-  const [files2, setFiles2] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [namHoc, setNamHoc] = useState(2025);
   const [dataResultExcel, setDataResultExcel] = useState([]);
@@ -32,27 +30,8 @@ function CreateData() {
 
   const [pageSize, setPageSize] = useState(50);
   const handlePageSizeChange = (current, size) => {
-    setPageSize(size); // Cập nhật số dòng khi người dùng thay đổi
+    setPageSize(size);
   };
-
-  const onDrop1 = useCallback((acceptedFiles) => {
-    setFiles1((prevFiles) => [...prevFiles, ...acceptedFiles]);
-  }, []);
-
-  const onDrop2 = useCallback((acceptedFiles) => {
-    setFiles2((prevFiles) => [...prevFiles, ...acceptedFiles]);
-  }, []);
-
-  const {
-    getRootProps: getRootProps1,
-    getInputProps: getInputProps1,
-    isDragActive: isDragActive1,
-  } = useDropzone({ onDrop: onDrop1 });
-  const {
-    getRootProps: getRootProps2,
-    getInputProps: getInputProps2,
-    isDragActive: isDragActive2,
-  } = useDropzone({ onDrop: onDrop2 });
 
   const handleUploadFileDataCustomerNew = async () => {
     if (!file) {
@@ -198,8 +177,6 @@ function CreateData() {
   ];
 
   function xuatExcelLoi() {
-    // console.log(123);
-
     let header = [
       {
         header: "Dòng excel lỗi",
@@ -331,18 +308,17 @@ function CreateData() {
     <div>
       <Spin spinning={loading} tip="Loading" size="small">
         <div className="flex justify-center">
-          <div className="border-dashed border-2 border-gray-400 rounded-lg p-4 bg-gray-50 shadow-sm w-1/3">
+          <div className="border-dashed border-2 border-gray-400 rounded-lg p-4 bg-gray-50 shadow-sm w-1/3 mb-4">
             <div className="mb-2 text-center">
               <b>Thêm khách hàng</b>
             </div>
-
-            <table>
+            <table className="w-full">
               <tr>
                 <td>Năm học: </td>
                 <td>
                   <Select
                     defaultValue="2025"
-                    style={{ width: 120 }}
+                    className="w-full"
                     onChange={handleChangeNamHoc}
                     options={[
                       { value: "2027", label: "2027" },
@@ -357,14 +333,18 @@ function CreateData() {
                   />
                 </td>
               </tr>
-
               <tr>
                 <td>Chọn file: </td>
                 <td>
-                  <input type="file" onChange={handleFileChangeFile} />
+                  <input
+                    type="file"
+                    onChange={handleFileChangeFile}
+                    className="w-full border border-gray-300 rounded px-2 py-1"
+                  />
                 </td>
               </tr>
             </table>
+
             <div className="text-xs">
               Lưu ý: cho phép up file dạng .xls .xlsx
             </div>

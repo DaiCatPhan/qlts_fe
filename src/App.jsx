@@ -7,7 +7,7 @@ import LayoutAdmin from "./Layouts/LayoutAdmin/LayoutAdmin";
 import LayoutUserManager from "./Layouts/LayoutUserManager/LayoutUserManager";
 import Footer from "./Layouts/OnlyLayout/Footer";
 import AdminHomePage from "./pages/AdminHomePage";
-import CreateData from "./pages/CreateData";
+import CreateData from "./pages/ql/quanlydulieu/CreateData";
 import DetailCustomer from "./pages/DetailCustomer";
 import DetailData from "./pages/DetailData";
 import DetailDataUsermanager from "./pages/DetailDataUsermanager";
@@ -15,7 +15,7 @@ import DivisionData from "./pages/DivisionData";
 import EditData from "./pages/EditData";
 import EditDataUsermanager from "./pages/EditDataUsermanager";
 import HomePage from "./pages/HomePage";
-import ListData from "./pages/ListData";
+import DanhSachDuLieu from "./pages/ql/quanlydulieu/DanhSachDuLieu";
 import Login from "./pages/Login";
 import ManagerDataUsermanager from "./pages/um/ManagerDataUsermanager";
 import ManagerDoanDuLieu from "./pages/um/ManagerDoanDuLieu";
@@ -24,7 +24,7 @@ import ManagerThematicUsermanager from "./pages/ManagerThematicUsermanager";
 import ManagerUser from "./pages/ManagerUser";
 import ProfileAdmin from "./pages/ProfileAdmin";
 import ProfileUser from "./pages/ProfileUser";
-import SegmentData from "./pages/SegmentData";
+import SegmentData from "./pages/ql/quanlydulieu/SegmentData";
 import SegmentDetail from "./pages/SegmentDetail";
 import StatisticalContact from "./pages/StatisticalContact";
 import StatisticalDay from "./pages/StatisticalDay";
@@ -128,7 +128,7 @@ function App() {
         },
         {
           path: "data",
-          element: <ListData />,
+          element: <DanhSachDuLieu />,
         },
         {
           path: "data/:id",

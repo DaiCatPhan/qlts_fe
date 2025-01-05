@@ -1,234 +1,46 @@
 import {
-  faClipboardList,
-  faDatabase,
   faEllipsisVertical,
   faPencil,
   faPhone,
-  faPlus,
-  faSchool,
-  faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Dropdown, message, Modal, Space } from "antd";
+import { Dropdown, Modal, Space } from "antd";
 import useSWR from "swr";
-import { API_NOTE, API_THEMATIC } from "../constants";
-import {
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Pagination,
-  Tooltip,
-  Progress,
-  User,
-  Chip,
-} from "@nextui-org/react";
-import { Tag } from "antd";
-import {
-  IconArrowNarrowUp,
-  IconCurrencyDollar,
-  IconEdit,
-  IconTrash,
-} from "@tabler/icons-react";
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { API_NOTE, API_THEMATIC, API_DATA } from "../constants";
+import { User } from "@nextui-org/react";
+import { IconEdit } from "@tabler/icons-react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import NoteService from "../service/NoteService";
 import MisscallService from "../service/MisscallService";
 import moment from "moment";
 import { Table } from "antd";
+import ModalUpdateLienHeSinhVien from "./um/modal/ModalUpdateLienHeSinhVien";
 
 function UserManagerHomePage() {
-  const INITIAL_VISIBLE_COLUMNS = [
-    "id",
-    "tenchuyende",
-    "tentruong",
-    "usermanager",
-    "ngaythongbao",
-    "ngaytochuc",
-    "noidung",
-    "actions",
-  ];
   const user = useSelector((state) => state.account.user);
-  const { data: dataThematic, mutate: fetchDataThematic } = useSWR(
-    `${API_THEMATIC}/readAll`
+  const [MATRANGTHAI, setMATRANGTHAI] = useState("tt06");
+  const [dataMisscall, setdataMisscall] = useState([]);
+  const [note, setNote] = useState("");
+
+  // modal
+  const [isShowModalUpdate, setIsShowModalUpdate] = useState(false);
+  const [dataSV, setdataSV] = useState();
+
+  const { data: dataMisscallRaw, mutate: fetchDataMisscallRaw } = useSWR(
+    `${API_DATA}/getLienHeMissCall?SDT=${user.SDT}&MATRANGTHAI=${MATRANGTHAI}`
   );
+
   const { data: dataNote, mutate: fetchDataNote } = useSWR(
     `${API_NOTE}/readAll?SDT=${user.SDT}`
   );
 
-  const confirm = (e) => {
-    console.log(e);
-    message.success("Click on Yes");
-  };
-  const cancel = (e) => {
-    console.log(e);
-    message.error("Click on No");
-  };
-  const [filterSearchName, setFillterSearchName] = useState("");
-  const data = useMemo(() => {
-    return (
-      dataThematic?.data?.map((thematic, index) => {
-        return {
-          id: index + 1,
-          tenchuyende: thematic?.TENCHUYENDE,
-          tentruong: thematic?.MATRUONG,
-          usermanager: thematic?.usermanager?.HOTEN || "",
-          ngaythongbao: thematic?.THOIGIANTHONGBAO,
-          ngaytochuc: thematic?.THOIGIANTOCHUCCHUYENDE,
-          noidung: thematic?.NOIDUNG,
-        };
-      }) || []
-    );
-  }, [dataThematic]);
-
-  const columns = [
-    { name: "STT", uid: "id", sortable: true },
-    { name: "Tên chuyên đề", uid: "tenchuyende" },
-    { name: "Tên trường", uid: "tentruong" },
-    { name: "User manager", uid: "usermanager" },
-    { name: "Ngày thông báo", uid: "ngaythongbao", sortable: true },
-    { name: "Ngày tổ chức", uid: "ngaytochuc", sortable: true },
-    { name: "Nội dung", uid: "noidung" },
-    { name: "Tùy chọn", uid: "actions" },
-  ];
-
-  const [visibleColumns, setVisibleColumns] = useState(
-    new Set(INITIAL_VISIBLE_COLUMNS)
-  );
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [total, setTotal] = useState(1);
-  const [sortDescriptor, setSortDescriptor] = useState({
-    column: "age",
-    direction: "ascending",
-  });
-  const [page, setPage] = useState(1);
-
-  const hasSearchFilter = Boolean(filterSearchName);
-
-  const headerColumns = useMemo(() => {
-    if (visibleColumns === "all") return columns;
-
-    return columns.filter((column) =>
-      Array.from(visibleColumns).includes(column.uid)
-    );
-  }, [visibleColumns]);
-
-  const filteredItems = useMemo(() => {
-    let filteredUsers = [...data];
-    if (hasSearchFilter) {
-      filteredUsers = filteredUsers.filter((data) =>
-        data.tenchuyende.toLowerCase().includes(filterSearchName.toLowerCase())
-      );
-    }
-
-    return filteredUsers;
-  }, [data, filterSearchName]);
-
-  const items = useMemo(() => {
-    return filteredItems;
-  }, [page, filteredItems, rowsPerPage]);
-
-  const sortedItems = useMemo(() => {
-    return [...items].sort((a, b) => {
-      const first = a[sortDescriptor.column];
-      const second = b[sortDescriptor.column];
-      const cmp = first < second ? -1 : first > second ? 1 : 0;
-
-      return sortDescriptor.direction === "descending" ? -cmp : cmp;
-    });
-  }, [sortDescriptor, items]);
-
-  const paginatedItems = useMemo(() => {
-    const startIdx = (page - 1) * rowsPerPage;
-    const endIdx = startIdx + rowsPerPage;
-    return sortedItems.slice(startIdx, endIdx);
-  }, [sortedItems, page, rowsPerPage]);
-
-  const renderCell = useCallback((thematic, columnKey) => {
-    const cellValue = thematic[columnKey];
-
-    switch (columnKey) {
-      case "thoigianphan":
-        return (
-          <div className="flex flex-col justify-center">
-            <span className="text-bold text-small capitalize">{cellValue}</span>
-          </div>
-        );
-      case "tentruong":
-        return (
-          <div className="flex flex-col justify-center">
-            <span className="text-bold text-small capitalize">{cellValue}</span>
-          </div>
-        );
-      case "actions":
-        return <div className="relative flex items-center gap-2"></div>;
-
-      default:
-        return cellValue;
-    }
-  }, []);
-
   useEffect(() => {
-    if (dataThematic) {
-      const totalPages = Math.ceil(dataThematic.length / rowsPerPage);
-      setTotal(totalPages > 0 ? totalPages : 1);
+    if (dataMisscallRaw) {
+      setdataMisscall(dataMisscallRaw);
     }
-  }, [dataThematic, rowsPerPage]);
-
-  const onRowsPerPageChange = useCallback((e) => {
-    setRowsPerPage(Number(e.target.value));
-    setPage(1);
-  }, []);
-
-  const onSearchChange = useCallback((value) => {
-    if (value) {
-      setFillterSearchName(value);
-      setPage(1);
-    } else {
-      setFillterSearchName("");
-    }
-  }, []);
-
-  const bottomContent = useMemo(() => {
-    return (
-      <div className="py-2 px-2 flex justify-between items-center">
-        <Pagination
-          showControls
-          classNames={{
-            cursor: "bg-foreground text-background",
-          }}
-          color="default"
-          page={page}
-          total={total}
-          variant="light"
-          onChange={(e) => {
-            setPage(e);
-          }}
-        />
-        <div className="flex justify-between items-center mb-2 gap-5">
-          <span className="text-default-400 text-small">
-            Total {data.length} data
-          </span>
-          <label className="flex items-center text-default-400 text-small">
-            Rows per page:
-            <select
-              className="bg-transparent outline-none text-default-400 text-small"
-              onChange={onRowsPerPageChange}
-              value={rowsPerPage}
-            >
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="15">15</option>
-            </select>
-          </label>
-        </div>
-      </div>
-    );
-  }, [items.length, page, hasSearchFilter, rowsPerPage, total]);
-
-  const [note, setNote] = useState("");
+  }, [dataMisscallRaw]);
 
   const handleCreateNote = async () => {
     try {
@@ -267,32 +79,14 @@ function UserManagerHomePage() {
     }
   };
 
-  // TABLE MISSCALL ==============================================
-  const [isShowModalEditMisscall, setIsShowModalEditMisscall] = useState(false);
-  const [dataModalEditMisscall, setDataModalEditMisscall] = useState([]);
-  const [listMisscall, setListMisscall] = useState([]);
-
-  const handleModalEditMisscall = (data) => {
-    setIsShowModalEditMisscall(true);
-    setDataModalEditMisscall(data);
-  };
-  const readAllMisscall = async () => {
-    const res = await MisscallService.readAllUM(`TRANGTHAI=0&SDT=0123456788`);
-    if (res && res.statusCode == 200) {
-      let cus = res?.data?.map((item) => ({
-        ...item,
-        key: item?.MALIENHE,
-      }));
-
-      setListMisscall(cus);
-    }
-  };
-
-  useEffect(() => {
-    readAllMisscall();
-  }, []);
-
   const columnsMisscall = [
+    {
+      title: "STT",
+      dataIndex: "STT",
+      key: "STT",
+      render: (_, __, index) => index + 1,
+    },
+
     {
       title: "SDT",
       dataIndex: "",
@@ -300,21 +94,37 @@ function UserManagerHomePage() {
       render: (data) => {
         return <div>{data?.SDT_KH}</div>;
       },
-      width: 150,
+    },
+    {
+      title: "Họ tên",
+      dataIndex: "HOTEN",
+      key: "HOTEN",
+      render: (data) => {
+        return <div>{data}</div>;
+      },
+    },
+    {
+      title: "Đoạn",
+      dataIndex: "MaPQ",
+      key: "MaPQ",
+    },
+    {
+      title: "Lần",
+      dataIndex: "LAN",
+      key: "LAN",
+    },
+    {
+      title: "Ngày liên hệ",
+      dataIndex: "THOIGIAN",
+      key: "THOIGIAN",
+      render: (THOIGIAN) => {
+        return moment(THOIGIAN).format("DD-MM-YYYY");
+      },
     },
     {
       title: "Trạng thái",
-      dataIndex: "",
-      key: "staus",
-      render: (data) => {
-        return (
-          <div>
-            <Chip variant="bordered" color="warning">
-              Gọi nhỡ
-            </Chip>
-          </div>
-        );
-      },
+      dataIndex: "TENTRANGTHAI",
+      key: "TENTRANGTHAI",
     },
     {
       title: "Hành động",
@@ -324,7 +134,10 @@ function UserManagerHomePage() {
         return (
           <div>
             <IconEdit
-              onClick={() => handleModalEditMisscall(record)}
+              onClick={() => {
+                setIsShowModalUpdate(true);
+                setdataSV(record);
+              }}
               color="orange"
               width={20}
               className="cursor-pointer"
@@ -332,177 +145,13 @@ function UserManagerHomePage() {
           </div>
         );
       },
-      width: 150,
+      width: 40,
     },
   ];
 
   return (
     <>
       <div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4 pb-5">
-          <div className="relative p-4 rounded-2xl bg-white shadow dark:bg-gray-800">
-            <div className="space-y-1">
-              <div className="flex gap-4">
-                <div className="my-auto">
-                  <FontAwesomeIcon
-                    icon={faPhone}
-                    size="xl"
-                    className="border-1 p-2 rounded-lg bg-blue-600 text-white"
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm font-medium text-gray-500 dark:text-gray-400">
-                    <span>Liên hệ lần 1</span>
-                  </div>
-                  <div className="text-xl dark:text-gray-100">4/125</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-1 rtl:space-x-reverse text-sm font-medium text-blue-500 cursor-pointer">
-                <span>Danh sách chi tiết</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative p-4 rounded-2xl bg-white shadow dark:bg-gray-800">
-            <div className="space-y-1">
-              <div className="flex gap-4">
-                <div className="my-auto">
-                  <FontAwesomeIcon
-                    icon={faPhone}
-                    size="xl"
-                    className="border-1 p-2 rounded-lg bg-blue-600 text-white"
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm font-medium text-gray-500 dark:text-gray-400">
-                    <span>Liên hệ lần 2</span>
-                  </div>
-                  <div className="text-xl dark:text-gray-100">3/125</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-1 rtl:space-x-reverse text-sm font-medium text-blue-500 cursor-pointer">
-                <span>Danh sách chi tiết</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative p-4 rounded-2xl bg-white shadow dark:bg-gray-800">
-            <div className="space-y-1">
-              <div className="flex gap-4">
-                <div className="my-auto">
-                  <FontAwesomeIcon
-                    icon={faPhone}
-                    size="xl"
-                    className="border-1 p-2 rounded-lg bg-blue-600 text-white"
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm font-medium text-gray-500 dark:text-gray-400">
-                    <span>Liên hệ lần 3</span>
-                  </div>
-                  <div className="text-xl dark:text-gray-100">1/125</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-1 rtl:space-x-reverse text-sm font-medium text-blue-500 cursor-pointer">
-                <span>Danh sách chi tiết</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative p-4 rounded-2xl bg-white shadow dark:bg-gray-800">
-            <div className="space-y-1">
-              <div className="flex gap-4">
-                <div className="my-auto">
-                  <FontAwesomeIcon
-                    icon={faPhone}
-                    size="xl"
-                    className="border-1 p-2 rounded-lg bg-blue-600 text-white"
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm font-medium text-gray-500 dark:text-gray-400">
-                    <span>Liên hệ lần 4</span>
-                  </div>
-                  <div className="text-xl dark:text-gray-100">2/125</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-1 rtl:space-x-reverse text-sm font-medium text-blue-500 cursor-pointer">
-                <span>Danh sách chi tiết</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 pb-5">
-          <div className="relative p-4 rounded-2xl bg-white shadow dark:bg-gray-800">
-            <div className="space-y-1">
-              <div className="flex gap-4">
-                <div className="my-auto">
-                  <FontAwesomeIcon
-                    icon={faPhone}
-                    size="xl"
-                    className="border-1 p-2 rounded-lg bg-blue-600 text-white"
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm font-medium text-gray-500 dark:text-gray-400">
-                    <span>Liên hệ lần 5</span>
-                  </div>
-                  <div className="text-xl dark:text-gray-100">3/125</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-1 rtl:space-x-reverse text-sm font-medium text-blue-500 cursor-pointer">
-                <span>Danh sách chi tiết</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative p-4 rounded-2xl bg-white shadow dark:bg-gray-800">
-            <div className="space-y-1">
-              <div className="flex gap-4">
-                <div className="my-auto">
-                  <FontAwesomeIcon
-                    icon={faPhone}
-                    size="xl"
-                    className="border-1 p-2 rounded-lg bg-blue-600 text-white"
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm font-medium text-gray-500 dark:text-gray-400">
-                    <span>Liên hệ lần 6</span>
-                  </div>
-                  <div className="text-xl dark:text-gray-100">5/125</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-1 rtl:space-x-reverse text-sm font-medium text-blue-500 cursor-pointer">
-                <span>Danh sách chi tiết</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative p-4 rounded-2xl bg-white shadow dark:bg-gray-800">
-            <div className="space-y-1">
-              <div className="flex gap-4">
-                <div className="my-auto">
-                  <FontAwesomeIcon
-                    icon={faPhone}
-                    size="xl"
-                    className="border-1 p-2 rounded-lg bg-blue-600 text-white"
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2 rtl:space-x-reverse text-sm font-medium text-gray-500 dark:text-gray-400">
-                    <span>Liên hệ lần 7</span>
-                  </div>
-                  <div className="text-xl dark:text-gray-100">1/125</div>
-                </div>
-              </div>
-              <div className="flex items-center space-x-1 rtl:space-x-reverse text-sm font-medium text-blue-500 cursor-pointer">
-                <span>Danh sách chi tiết</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div
           style={{
             padding: 24,
@@ -515,9 +164,8 @@ function UserManagerHomePage() {
           <div className="grid grid-cols-3">
             <div className="col-span-3 md:col-span-2 px-0 md:px-5">
               <Table
-                dataSource={listMisscall}
+                dataSource={dataMisscall}
                 columns={columnsMisscall}
-                // onChange={handleTableChange}
                 bordered
               />
             </div>
@@ -539,7 +187,7 @@ function UserManagerHomePage() {
                               src: "https://i.pinimg.com/564x/89/90/48/899048ab0cc455154006fdb9676964b3.jpg",
                             }}
                           />
-                          <div className="bg-gray-100 col-span-9 rounded-t-xl rounded-ee-xl px-2 h-auto">
+                          <div className="bg-gray-100 col-span-9 rounded-t-xl rounded-ee-xl px-2 h-auto break-words">
                             <p className="font-medium">{user.HOTEN}</p>
                             <p>{note.NOIDUNG}</p>
                           </div>
@@ -604,61 +252,18 @@ function UserManagerHomePage() {
             </div>
           </div>
         </div>
+        <ModalUpdateLienHeSinhVien
+          isShowModalUpdate={isShowModalUpdate}
+          setIsShowModalUpdate={setIsShowModalUpdate}
+          SDT_KH={dataSV?.SDT_KH}
+          MaPQ={dataSV?.MaPQ}
+          lan={dataSV?.LAN}
+          SDT={user?.SDT}
+          fetchDetailSegment={fetchDataMisscallRaw}
+        />
       </div>
-
-      <ModalEditMisscall
-        isShowModalEditMisscall={isShowModalEditMisscall}
-        setIsShowModalEditMisscall={setIsShowModalEditMisscall}
-        setDataModalEditMisscall={setDataModalEditMisscall}
-        dataModalEditMisscall={dataModalEditMisscall}
-        readAllMisscall={readAllMisscall}
-      />
     </>
   );
-
-  function ModalEditMisscall(props) {
-    const {
-      isShowModalEditMisscall,
-      setIsShowModalEditMisscall,
-      setDataModalEditMisscall,
-      dataModalEditMisscall,
-      readAllMisscall,
-    } = props;
-
-    const [confirmLoading, setConfirmLoading] = useState(false);
-    const handleOk = async () => {
-      const res = await MisscallService.update({
-        MAMISSCALL: dataModalEditMisscall?.misscall?.MAMISSCALL,
-        TRANGTHAI: 1,
-        UPDATECONTACT: 1,
-        MALIENHE: dataModalEditMisscall?.misscall?.MALIENHE,
-      });
-
-      if (res && res.statusCode == 200) {
-        toast.success(res.message);
-        readAllMisscall();
-        handleCancel();
-      } else {
-        toast.error(res.message);
-      }
-    };
-    const handleCancel = () => {
-      setIsShowModalEditMisscall(false);
-    };
-    return (
-      <div>
-        <Modal
-          title="Cập nhật gọi nhỡ"
-          open={isShowModalEditMisscall}
-          onOk={handleOk}
-          confirmLoading={confirmLoading}
-          onCancel={handleCancel}
-        >
-          <div>Cập nhật trạng thái gọi nhỡ</div>
-        </Modal>
-      </div>
-    );
-  }
 }
 
 export default UserManagerHomePage;

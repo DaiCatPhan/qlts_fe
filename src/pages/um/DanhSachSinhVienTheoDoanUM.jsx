@@ -10,26 +10,47 @@ import { toast } from "react-toastify";
 import ModalUpdateLienHeSinhVien from "./modal/ModalUpdateLienHeSinhVien";
 import { IconChessFilled } from "@tabler/icons-react";
 import { BackwardOutlined, FileExcelOutlined } from "@ant-design/icons";
+import moment from "moment";
+import excel from "../../components/ExportFile/ExportFile";
 
 function ManagerDataUsermanager() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.account.user);
 
   const [data, setData] = useState([]);
-  const [MaPQ, setMaPQ] = useState("");
+  const [phanquyen, setPhanquyen] = useState([]);
+
   const [trangthai, setTrangthai] = useState("1");
   const [DALIENHE, setDALIENHE] = useState("3");
+
   // bộ search
+  const [MaPQSearch, setMaPQSearch] = useState("");
   const [HOTENSearch, setHOTENSearch] = useState("");
   const [SDTSearch, setSDTSearch] = useState("");
   const [EmailSearch, setEmailSearch] = useState("");
   const [TruongSearch, setTruongSearch] = useState("");
 
-  // get data list
+  // modal
+  const [isShowModalUpdate, setIsShowModalUpdate] = useState(false);
+  const [dataSV, setdataSV] = useState();
+
+  // get data
+  const { data: dataPhanquyen, mutate: fetchDataPhanquyen } = useSWR(
+    `${API_DATA}/phanquyen?SDT=${user?.SDT}`
+  );
   const { data: dataList, mutate: fetchDetailSegment } = useSWR(
-    `${API_DATA}/segment?MaPQ=${MaPQ}&TRANGTHAILIENHE=${trangthai}&SDT=${user.SDT}&DALIENHE=${DALIENHE}&HOTENSearch=${HOTENSearch}&SDTSearch=${SDTSearch}&EmailSearch=${EmailSearch}&TruongSearch=${TruongSearch}`
+    `${API_DATA}/segment?MaPQ=${MaPQSearch}&TRANGTHAILIENHE=${trangthai}&SDT=${user.SDT}&DALIENHE=${DALIENHE}&HOTENSearch=${HOTENSearch}&SDTSearch=${SDTSearch}&EmailSearch=${EmailSearch}&TruongSearch=${TruongSearch}`
   );
   useEffect(() => {
+    if (dataPhanquyen) {
+      let dataPhanquyenTemp = dataPhanquyen?.map((item) => {
+        return {
+          label: item.MaPQ,
+          value: item.MaPQ,
+        };
+      });
+      setPhanquyen(dataPhanquyenTemp);
+    }
     if (dataList) {
       let temp = [];
       dataList.forEach((item) => {
@@ -37,7 +58,6 @@ function ManagerDataUsermanager() {
           temp.push(i);
         });
       });
-      console.log(temp);
       setData(temp);
     }
   }, [dataList, trangthai, DALIENHE]);
@@ -65,6 +85,7 @@ function ManagerDataUsermanager() {
       render: (data) => {
         return <div>{data?.khachhang.HOTEN}</div>;
       },
+      width: 200,
     },
     {
       title: "Email",
@@ -73,6 +94,7 @@ function ManagerDataUsermanager() {
       render: (data) => {
         return <div>{data?.khachhang.EMAIL}</div>;
       },
+      width: 150,
     },
 
     {
@@ -87,16 +109,28 @@ function ManagerDataUsermanager() {
     {
       title: "Mã đoạn",
       dataIndex: "",
-      key: "maDoan",
+      key: "DOAN",
       render: (data) => {
-        return <div>{}</div>;
+        return <div>{data?.MaPQ}</div>;
+      },
+    },
+
+    {
+      title: "Ngày liên hệ",
+      dataIndex: "",
+      key: "NGAYLIENHE",
+      render: (data) => {
+        let lienhe = data?.lienhe?.find((i) => i.LAN == trangthai || "");
+        return (
+          <div>{lienhe && moment(lienhe?.THOIGIAN).format("DD-MM-YYYY")}</div>
+        );
       },
     },
 
     {
       title: "Đã liên hệ",
       dataIndex: "",
-      key: "dalienhe",
+      key: "DALIENHE",
       render: (data) => {
         return (
           <div>
@@ -113,7 +147,7 @@ function ManagerDataUsermanager() {
     {
       title: "trạng thái",
       dataIndex: "",
-      key: "matrangthai",
+      key: "TRANGTHAI",
       render: (data) => {
         let lienhe = data?.lienhe?.find((i) => i.LAN == trangthai || "");
         return <div>{lienhe?.trangthai?.TENTRANGTHAI}</div>;
@@ -122,27 +156,13 @@ function ManagerDataUsermanager() {
     },
 
     {
-      title: "mô tả",
+      title: "Cập nhật",
       dataIndex: "",
-      key: "motatrangthai",
-      render: (data) => {
-        let lienhe = data?.lienhe?.find((i) => i.LAN == trangthai || "");
-        return <div>{lienhe?.trangthai?.CHITIETTRANGTHAI}</div>;
-      },
-      width: 180,
-    },
-
-    {
-      title: "Hành động",
-      dataIndex: "",
-      key: "address",
+      key: "edit",
       render: (record) => {
         return (
           <div>
             <div>
-              <IconChessFilled color="blue"></IconChessFilled>
-            </div>
-            {/* <div>
               <IconEdit
                 onClick={() => {
                   setIsShowModalUpdate(true);
@@ -152,10 +172,11 @@ function ManagerDataUsermanager() {
                 width={20}
                 className="cursor-pointer"
               />
-            </div> */}
+            </div>
           </div>
         );
       },
+      width: 90,
     },
   ];
 
@@ -166,6 +187,156 @@ function ManagerDataUsermanager() {
     setTrangthai(value);
   };
 
+  // In/Xuất dữ liệu excel
+  function xuatExcel() {
+    let header = [
+      {
+        header: "STT",
+        key: "STT",
+      },
+      {
+        header: "Số điện thoại",
+        key: "SDT",
+      },
+      {
+        header: "Họ và tên",
+        key: "HOTEN",
+      },
+      {
+        header: "Email",
+        key: "EMAIL",
+      },
+      {
+        header: "Trường",
+        key: "TRUONG",
+      },
+      {
+        header: "Đoạn",
+        key: "DOAN",
+      },
+      {
+        header: "Ngày liên hệ",
+        key: "NGAYLIENHE",
+      },
+      {
+        header: "Đã liên hệ",
+        key: "DALIENHE",
+      },
+      {
+        header: "Trạng thái",
+        key: "TRANGTHAI",
+      },
+    ];
+
+    let i = 0;
+    let dataEx = data?.map((item) => {
+      i++;
+      let lienhe = item?.lienhe?.find((i) => i.LAN == trangthai) || {};
+      return {
+        STT: i,
+        SDT: item?.khachhang?.SDT,
+        HOTEN: item?.khachhang?.HOTEN,
+        EMAIL: item?.khachhang?.EMAIL,
+        TRUONG: item?.khachhang?.truong?.TENTRUONG || "",
+        DOAN: item?.MaPQ,
+        NGAYLIENHE: lienhe?.THOIGIAN
+          ? moment(lienhe?.THOIGIAN).format("DD-MM-YYYY")
+          : "",
+        DALIENHE: lienhe?.MALIENHE ? "X" : "",
+        TRANGTHAI: lienhe?.trangthai ? lienhe?.trangthai?.TENTRANGTHAI : "",
+      };
+    });
+
+    excel.EX_Excel({
+      header: header,
+      data: dataEx,
+      nameFile: `DANH SÁCH KHÁCH HÀNG LIÊN HỆ LẦN ${trangthai}`,
+    });
+  }
+  function In() {
+    let header = [
+      {
+        header: "STT",
+        key: "STT",
+      },
+      {
+        header: "Số điện thoại",
+        key: "SDT",
+      },
+      {
+        header: "Họ và tên",
+        key: "HOTEN",
+      },
+      {
+        header: "Email",
+        key: "EMAIL",
+      },
+      {
+        header: "Trường",
+        key: "TRUONG",
+      },
+      {
+        header: "Đoạn",
+        key: "DOAN",
+      },
+      {
+        header: "Ngày liên hệ",
+        key: "NGAYLIENHE",
+      },
+      {
+        header: "Đã liên hệ",
+        key: "DALIENHE",
+      },
+      {
+        header: "Trạng thái",
+        key: "TRANGTHAI",
+      },
+    ];
+
+    let i = 0;
+    let dataEx = data?.map((item) => {
+      i++;
+      let lienhe = item?.lienhe?.find((i) => i.LAN == trangthai) || {};
+      return {
+        STT: i,
+        SDT: item?.khachhang?.SDT,
+        HOTEN: item?.khachhang?.HOTEN,
+        EMAIL: item?.khachhang?.EMAIL,
+        TRUONG: item?.khachhang?.truong?.TENTRUONG || "",
+        DOAN: item?.MaPQ,
+        NGAYLIENHE: lienhe?.THOIGIAN
+          ? moment(lienhe?.THOIGIAN).format("DD-MM-YYYY")
+          : "",
+        DALIENHE: lienhe?.MALIENHE ? "X" : "",
+        TRANGTHAI: lienhe?.trangthai ? lienhe?.trangthai?.TENTRANGTHAI : "",
+      };
+    });
+
+    excel.PRINT_DATA({
+      header: header,
+      data: dataEx,
+      nameFile: `DANH SÁCH KHÁCH HÀNG LIÊN HỆ LẦN ${trangthai}`,
+    });
+  }
+
+  // count Liên Hệ
+  const countLienHe = (data, lan) => {
+    let daLienHe = 0;
+    let chuaLienHe = 0;
+
+    data?.forEach((item) => {
+      let lienhe = item?.lienhe?.find((i) => i.LAN == lan) || {};
+      if (lienhe?.MALIENHE) {
+        daLienHe++;
+      } else {
+        chuaLienHe++;
+      }
+    });
+    return { daLienHe, chuaLienHe };
+  };
+
+  let lienhe = countLienHe(data, trangthai);
+
   return (
     <div>
       <div className="flex w-2/3 m-auto justify-around">
@@ -173,10 +344,13 @@ function ManagerDataUsermanager() {
           <b>Lần liên hệ: {trangthai}</b>
         </div>
         <div>
-          <b>Đã liên hệ: chưa làm</b>
+          <b>Tổng liên hệ: {data?.length}</b>
         </div>
         <div>
-          <b>Chưa liên hệ: chưa làm</b>
+          <b>Đã liên hệ: {lienhe?.daLienHe}</b>
+        </div>
+        <div>
+          <b>Chưa liên hệ: {lienhe?.chuaLienHe}</b>
         </div>
       </div>
 
@@ -291,6 +465,23 @@ function ManagerDataUsermanager() {
                 />
               </td>
             </tr>
+
+            <tr>
+              <td className="px-12">Mã đoạn</td>
+              <td>
+                <Select
+                  value={MaPQSearch}
+                  placeholder="Chọn trạng thái liên hệ"
+                  style={{
+                    width: "100%",
+                  }}
+                  onChange={(value) => {
+                    setMaPQSearch(value);
+                  }}
+                  options={[{ label: "Tất cả", value: "" }, ...phanquyen]}
+                />
+              </td>
+            </tr>
           </table>
         </div>
       </div>
@@ -299,6 +490,7 @@ function ManagerDataUsermanager() {
         <div className="mt-2">
           <span className="mx-2"></span>
           <Button
+            onClick={In}
             icon={<FileExcelOutlined />}
             style={{
               backgroundColor: "white",
@@ -306,10 +498,11 @@ function ManagerDataUsermanager() {
               borderColor: "green",
             }}
           >
-            <b>In (chưa làm)</b>
+            <b>In</b>
           </Button>
           <span className="mx-2"></span>
           <Button
+            onClick={xuatExcel}
             icon={<FileExcelOutlined />}
             style={{
               backgroundColor: "white",
@@ -317,7 +510,7 @@ function ManagerDataUsermanager() {
               borderColor: "green",
             }}
           >
-            <b>Xuất Excel (chưa làm)</b>
+            <b>Xuất Excel</b>
           </Button>
         </div>
       </div>
@@ -333,6 +526,16 @@ function ManagerDataUsermanager() {
           }}
         />
       </div>
+
+      <ModalUpdateLienHeSinhVien
+        isShowModalUpdate={isShowModalUpdate}
+        setIsShowModalUpdate={setIsShowModalUpdate}
+        SDT_KH={dataSV?.SDT}
+        MaPQ={dataSV?.MaPQ}
+        lan={trangthai}
+        SDT={user?.SDT}
+        fetchDetailSegment={fetchDetailSegment}
+      />
     </div>
   );
 }
