@@ -68,7 +68,7 @@ function DetailCustomer() {
   // handleFile
   const [selectedFile, setSelectedFile] = useState(null);
   const handleFileChange = (event) => {
-    const file = event.target.files[0];
+    let file = event.target.files;
     setSelectedFile(file);
   };
 
@@ -76,16 +76,17 @@ function DetailCustomer() {
     if (!selectedFile) {
       return toast.warning("Vui lòng chọn file update nhé ");
     }
-
     const formData = new FormData();
-    formData.append("file", selectedFile);
+    Array.from(selectedFile).forEach((file) => {
+      formData.append("file", file);
+    });
     formData.append("MAPHIEUDK", data?.phieudkxettuyen?.MAPHIEUDK);
 
     try {
       const config = {
         headers: {
           "Content-Type": "multipart/form-data",
-          folder_type: "hosoPhieudkxettuyen",
+          folder_type: `hosoPhieudkxettuyen/${user.SDT_KH}`,
         },
       };
       setLoading(true);
@@ -98,9 +99,8 @@ function DetailCustomer() {
       }
     } catch (error) {
       if (error.statusCode == 500 || error.statusCode == 422) {
-        toast.error("Dữ liệu file có vấn đề nhé  !!!");
+        toast.error("Có lỗi trong quá trình upload");
       }
-      console.error("Error while uploading file:", error);
     } finally {
       setLoading(false);
     }
@@ -360,7 +360,7 @@ function DetailCustomer() {
                           Ngành yêu thích
                         </p>
                         <div className="text-right w-72">
-                          {data?.nganhyeuthich.length != 0
+                          {data?.nganhyeuthich?.length != 0
                             ? data?.nganhyeuthich.map((job, index) => (
                                 <Tag
                                   key={index}
@@ -389,23 +389,26 @@ function DetailCustomer() {
                     <CardBody className="px-6 gap-4">
                       <div className="groupInput grid grid-cols-[1fr_auto] gap-0">
                         <p className="font-bold">Kênh nhận thông báo</p>
-                        <p>{data?.phieudkxettuyen?.khoahocquantam?.TENLOAIKHOAHOC || ""}</p>
+                        <p>
+                          {data?.phieudkxettuyen?.khoahocquantam
+                            ?.TENLOAIKHOAHOC || ""}
+                        </p>
                       </div>
                       <div className="groupInput grid grid-cols-[1fr_auto] gap-0">
                         <p className="font-bold">Khóa học quan tâm</p>
-                        <p>{data?.phieudkxettuyen?.khoahocquantam?.TENLOAIKHOAHOC || ""}</p>
+                        <p>
+                          {data?.phieudkxettuyen?.khoahocquantam
+                            ?.TENLOAIKHOAHOC || ""}
+                        </p>
                       </div>
                       <div className="groupInput grid grid-cols-[1fr_1fr] gap-0">
                         <p className="font-bold flex items-center">Hồ sơ</p>
                         <div className="text-right w-60">
                           {data?.phieudkxettuyen?.hoso?.map((item, index) => {
-                            const fullPath = item?.HOSO;
-                            const parts = fullPath.split("\\");
-                            const fileName = parts[parts.length - 1];
                             return (
                               <a
                                 key={item?.MAHOSO}
-                                href={`/api/v1/file/downLoadFile?MAHOSO=${item?.MAHOSO}`}
+                                href={`/api/v1/file/downLoadFile?MAPHIEUDK=DK268&SDT=0999911286`}
                                 className="flex items-center my-2 cursor-pointer text-blue-600"
                               >
                                 <div>
@@ -462,7 +465,7 @@ function DetailCustomer() {
               </ModalHeader>
               <ModalBody>
                 <p>Chọn file cần tải lên</p>
-                <input type="file" onChange={handleFileChange} />
+                <input type="file" onChange={handleFileChange} multiple />
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>

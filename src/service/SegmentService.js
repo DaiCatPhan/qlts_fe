@@ -35,6 +35,9 @@ const addFileExcelDataCustomerOld = (formData, config) => {
 };
 
 const dataFileCustomer = (formData, config) => {
+  console.log(formData);
+  console.log(config);
+
   return axios.post(`${API_FILE}/upload/dataFileCustomer`, formData, config);
 };
 

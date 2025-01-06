@@ -24,10 +24,12 @@ function ModalUpdateLienHeSinhVien(props) {
   const [nghenghiep, setNghenghiep] = useState([]);
   const [hinhthucthuthap, setHinhthucthuthap] = useState([]);
   const [khoaHocQuanTam, setKhoaHocQuanTam] = useState([]);
+  const [graduation, setGraduation] = useState([]);
+
   const [infoKH, setinfoKH] = useState({}); // dữ liệu gốc
+  const [thongTinKhachHang, setThongTinKhachHang] = useState({}); // dữ liệu lấy usetate đem cập nhật
 
   const [nganhYeuThich, setnganhYeuThich] = useState([]);
-  const [thongTinKhachHang, setThongTinKhachHang] = useState({}); // dữ liệu lấy usetate đem cập nhật
 
   const [MATRANGTHAI, setMATRANGTHAI] = useState("");
   const [CHITIETTRANGTHAI, setCHITIETTRANGTHAI] = useState("");
@@ -36,6 +38,10 @@ function ModalUpdateLienHeSinhVien(props) {
   const { data: dataLienHe, mutate: fetchDataLienHeStatus } = useSWR(
     `${API_DATA}/segment/getDataLienHe?SDT=${SDT}&SDT_KH=${SDT_KH}&LAN=${lan}&MaPQ=${MaPQ}`
   );
+  const { data: dataGraduation, mutate: fetchDataGraduation } = useSWR(
+    `${API_DATA}/table-graduation`
+  );
+
   const { data: dataJob, mutate: fetchDataJob } = useSWR(
     `${API_DATA}/table-job`
   );
@@ -64,6 +70,15 @@ function ModalUpdateLienHeSinhVien(props) {
   // goi api lấy thông tin liên hệ theo sdt_um + lan + mapq + sdt_kh
 
   useEffect(() => {
+    if (dataGraduation) {
+      const dataGraduationTemp = dataGraduation?.map((item) => {
+        return {
+          value: item?.MAKETQUA,
+          label: item?.KETQUA,
+        };
+      });
+      setGraduation(dataGraduationTemp);
+    }
     if (dataJob) {
       const dataJobTemp = dataJob?.map((item) => {
         return {
@@ -247,6 +262,47 @@ function ModalUpdateLienHeSinhVien(props) {
     alert("capNhatPhieuDangKy");
   };
 
+  // upload hồ sơ
+  const [selectedFile, setSelectedFile] = useState(null);
+  const handleFileChange = (event) => {
+    // const file = event.target.files[0];
+    const file = event.target.files;
+    setSelectedFile(file);
+  };
+  const handleUploadFile = async (onClose) => {
+    if (!selectedFile) {
+      return toast.warning("Vui lòng chọn file update nhé ");
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    formData.append("MAPHIEUDK", data?.phieudkxettuyen?.MAPHIEUDK);
+
+    try {
+      const config = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          folder_type: "hosoPhieudkxettuyen",
+        },
+      };
+      setLoading(true);
+      const res = await SegmentService.dataFileCustomer(formData, config);
+      if (res && res.statusCode === 200) {
+        toast.success("Upload file thành công");
+        onOpenChange(false);
+        mutate();
+        setSelectedFile(null);
+      }
+    } catch (error) {
+      if (error.statusCode == 500 || error.statusCode == 422) {
+        toast.error("Dữ liệu file có vấn đề nhé  !!!");
+      }
+      console.error("Error while uploading file:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <div>
@@ -273,10 +329,18 @@ function ModalUpdateLienHeSinhVien(props) {
                 key: 2,
                 label: "Cập nhật thông tin cá nhân",
               },
+              {
+                key: 3,
+                label: "Phiếu đăng ký xét tuyển",
+              },
+              {
+                key: 4,
+                label: "Kết quả xét tuyển",
+              },
             ]}
             onChange={onChangeTab}
           />
-          {tab == 1 ? (
+          {tab == 1 && (
             <div>
               <table className=" w-full">
                 <tr>
@@ -307,7 +371,8 @@ function ModalUpdateLienHeSinhVien(props) {
                 </tr>
               </table>
             </div>
-          ) : (
+          )}
+          {tab == 2 && (
             <div>
               {/* THÔNG TIN CÁ NHÂN */}
               <div className="border p-2 rounded-md my-1">
@@ -570,12 +635,12 @@ function ModalUpdateLienHeSinhVien(props) {
                   </tr>
                 </table>
               </div>
-              {/* PHIẾU ĐĂNG KÝ */}
+              {/* KHÓA HỌC QUAN TÂM */}
               <div className="border p-2 rounded-md my-1">
                 <table className="w-full">
                   <tr>
                     <td>
-                      <b>Phiếu đăng ký</b>
+                      <b>Khóa học quan tâm</b>
                     </td>
                     <td></td>
                   </tr>
@@ -590,6 +655,76 @@ function ModalUpdateLienHeSinhVien(props) {
                         }}
                         onChange={(value) => {}}
                         options={khoaHocQuanTam}
+                      />
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td></td>
+                    <td>
+                      <Button type="primary">Lưu</Button>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          )}
+          {tab == 3 && (
+            <div>
+              {/* PHIẾU ĐĂNG KÝ XÉT TUYỂN */}
+              <div className="border p-2 rounded-md my-1">
+                <table className="w-full">
+                  <tr>
+                    <td>
+                      <b>Phiếu đăng ký xét tuyển</b>
+                    </td>
+                    <td></td>
+                  </tr>
+
+                  <tr>
+                    <td width={200}>&nbsp;Phiếu đăng ký xét tuyển</td>
+                    <td>
+                      <input type="file" onChange={handleFileChange} multiple />
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td></td>
+                    <td>
+                      <Button type="primary" onClick={handleUploadFile}>
+                        Lưu
+                      </Button>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          )}
+          {tab == 4 && (
+            <div>
+              {/* KHÓA HỌC QUAN TÂM */}
+              <div className="border p-2 rounded-md my-1">
+                <table className="w-full">
+                  <tr>
+                    <td>
+                      <b>Kết quả xét tuyển</b>
+                    </td>
+                    <td></td>
+                  </tr>
+
+                  <tr>
+                    <td width={200}>&nbsp;Kết quả xét tuyển</td>
+                    <td>
+                      <Select
+                        defaultValue=""
+                        style={{
+                          width: "100%",
+                        }}
+                        onChange={(value) => {}}
+                        options={[
+                          { label: "Tất cả ", value: "" },
+                          ...graduation,
+                        ]}
                       />
                     </td>
                   </tr>
